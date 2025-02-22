@@ -1,0 +1,25 @@
+# envs
+P6/
+*.env
+
+# fichiers Python
+*.pyc
+*.pyo
+__pycache__/
+
+# dossiers et fichiers d'IDE
+.vscode/
+.idea/
+
+# fichiers système
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# logs
+*.log
+
+# fichiers temporaires
+*.tmp
+*.bak
+*.swp

@@ -1,0 +1,4 @@
+activer env P6 dans Bash : 
+
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate P6
