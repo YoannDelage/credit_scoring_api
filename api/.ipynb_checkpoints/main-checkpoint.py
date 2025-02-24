@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 import pandas as pd
-from api.model import load_model, predict 
+from model import load_model, predict 
 import mlflow
 import os
 import numpy as np
