@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Fonction pour charger le modèle
 def load_model(model_name: str):
+    # Charge le modèle depuis le modèle MLflow
     model = mlflow.pyfunc.load_model(f"models:/{model_name}")
     return model
 
@@ -38,7 +39,7 @@ def predict(model, features):
         return prediction[0]
     return prediction
 
-# Chargement du modèle 
+# Chargement du modèle directement dans main.py
 model = load_model("LGBM_smoted_tuned_trained/1")  # modèle MLflow
 if model is None:
     raise HTTPException(status_code=500, detail="Le modèle n'a pas pu être chargé.")
@@ -106,4 +107,5 @@ async def predict_api(data: InputData, request: Request):
     except Exception as e:
         logger.error(f"Erreur inconnue: {str(e)}")
         return {"error": f"Une erreur est survenue: {str(e)}"}
+
 
