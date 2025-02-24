@@ -11,7 +11,10 @@ st.header('Bonjour, veuillez entrer l\'ID du client recherché')
 # input ID du client
 sk_id_curr = st.text_input('ID du client', '')
 
-# fonction pour faire la requete API
+# Clé d'API (remplacer par ta clé réelle)
+API_KEY = 'HRKU-b32a3477-3def-45ff-af77-23caa503e3fc'
+
+# fonction pour faire la requête API
 def get_prediction(sk_id_curr):
     if not sk_id_curr:
         return "Erreur : L'ID du client ne peut pas être vide."
@@ -22,10 +25,14 @@ def get_prediction(sk_id_curr):
         return "Erreur : L'ID du client doit être un entier valide."
     
     url = 'https://credit-scoring-api-yd-268c4aa564a3.herokuapp.com/predict'
-    payload = {'SK_ID_CURR': sk_id_curr}  # on passe les données sous forme de dictionnaire
+    headers = {
+        'Authorization': f'Bearer {API_KEY}',  # Ajout de la clé API dans l'en-tête Authorization
+        'Content-Type': 'application/json'
+    }
+    payload = {'SK_ID_CURR': sk_id_curr}  # On passe les données sous forme de dictionnaire
 
     try:
-        response = requests.post(url, json=payload)  # Utilisation de POST
+        response = requests.post(url, json=payload, headers=headers)  # Utilisation de POST avec en-têtes
         
         # Si le code de réponse n'est pas 200
         if response.status_code != 200:
@@ -53,6 +60,7 @@ if st.button('Obtenir la prédiction'):
         st.write(f"Prédiction (0 = Crédit accordé, 1 = Crédit refusé) : {result['prediction']}")
     else:  # Si ce n'est pas un dictionnaire, afficher l'erreur
         st.write(result)
+
 
 
 

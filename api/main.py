@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
@@ -25,6 +25,9 @@ app.add_middleware(
 # Config des logs
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Clé d'API (remplacer par la même clé utilisée dans l'application Streamlit)
+API_KEY = 'HRKU-b32a3477-3def-45ff-af77-23caa503e3fc'
 
 # Fonction pour charger le modèle
 def load_model(model_name: str):
@@ -57,12 +60,20 @@ if model is None:
 class InputData(BaseModel):
     SK_ID_CURR: int
 
+# Fonction pour vérifier la clé d'API
+def verify_api_key(api_key: str):
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Clé d'API invalide")
+
 @app.get("/")
 def home():
     return {"message": "API de scoring connectée à MLflow !"}
 
 @app.post("/predict")
-async def predict_api(data: InputData, request: Request):
+async def predict_api(data: InputData, request: Request, api_key: str = Header(None)):
+    # Vérification de la clé d'API
+    verify_api_key(api_key)
+
     try:
         logger.debug(f"Requête reçue: {data}")
         
