@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 import pandas as pd
-from model import load_model, predict 
 import mlflow
 import os
 import numpy as np
@@ -16,6 +15,28 @@ app = FastAPI()
 # config des logs
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Fonction pour charger le modèle
+def load_model(model_name: str):
+    model = mlflow.pyfunc.load_model(f"models:/{model_name}")
+    return model
+
+# Fonction de prédiction
+def predict(model, features):
+    # Vérifie si features est déjà un DataFrame
+    if not isinstance(features, pd.DataFrame):
+        # Si format = np.array, convertir en DataFrame
+        df = pd.DataFrame(features)
+    else:
+        df = features
+        
+    # Prédiction
+    prediction = model.predict(df)
+    
+    # Vérifie que la prédiction est un scalaire
+    if hasattr(prediction, "__len__") and len(prediction) == 1:
+        return prediction[0]
+    return prediction
 
 # Chargement du modèle 
 model = load_model("LGBM_smoted_tuned_trained/1")  # modèle MLflow
@@ -65,7 +86,7 @@ async def predict_api(data: InputData, request: Request):
         
         logger.debug(f"Shape des features avant prédiction: {features.shape}")
         
-        # Prédiction avec le modèle par la fonction 'predict' dans model.py
+        # Prédiction avec le modèle par la fonction 'predict' intégrée
         prediction = predict(model, features)
         logger.debug(f"Prédiction du modèle: {prediction}")
 
@@ -85,3 +106,4 @@ async def predict_api(data: InputData, request: Request):
     except Exception as e:
         logger.error(f"Erreur inconnue: {str(e)}")
         return {"error": f"Une erreur est survenue: {str(e)}"}
+
