@@ -21,7 +21,7 @@ def get_prediction(sk_id_curr):
     except ValueError:
         return "Erreur : L'ID du client doit être un entier valide."
     
-    url = 'https://credit-scoring-api-yd.herokuapp.com/predict'
+    url = 'https://credit-scoring-api-yd-268c4aa564a3.herokuapp.com/predict'
     payload = {'SK_ID_CURR': sk_id_curr}  # on passe les données sous forme de dictionnaire
 
     try:
