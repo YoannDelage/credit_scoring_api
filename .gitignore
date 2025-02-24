@@ -6,6 +6,7 @@ P6/
 *.pyc
 *.pyo
 __pycache__/
+.ipynb_checkpoints/
 
 # dossiers et fichiers d'IDE
 .vscode/
