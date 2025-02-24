@@ -5,6 +5,7 @@ import pandas as pd
 import mlflow
 import os
 import logging
+import uvicorn
 
 # URI de suivi pour pointer vers serveur MLflow
 mlflow.set_tracking_uri("http://localhost:5000")  
@@ -107,6 +108,12 @@ async def predict_api(data: InputData, request: Request):
     except Exception as e:
         logger.error(f"Erreur inconnue: {str(e)}")
         return {"error": f"Une erreur est survenue: {str(e)}"}
+
+# Si le script est exécuté directement, lancer l'application sur le bon port pour Heroku
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))  # Prend le port défini par Heroku
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
 
 
 
