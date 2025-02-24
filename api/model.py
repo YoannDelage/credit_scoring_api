@@ -1,18 +1,26 @@
 import mlflow
 import mlflow.pyfunc
 import pandas as pd
+import numpy as np
 
-# Charger ton modèle MLflow depuis le model registry ou le modèle sauvegardé
+# chgt du modele MLflow depuis registry
 def load_model(model_name: str):
-    # Si ton modèle est dans un "model registry" MLflow
-    model = mlflow.pyfunc.load_model(f"models:/LightGBM_smoted_tuned_trained.pkl/3")
+    model = mlflow.pyfunc.load_model(f"models:/{model_name}")
     return model
 
-# Fonction de prédiction
-def predict(model, features: list):
-    # Convertir les données en DataFrame
-    df = pd.DataFrame([features])
-
-    # Effectuer la prédiction
+# fonction de prediction
+def predict(model, features):
+    # veriif si features deja dans un DF
+    if not isinstance(features, pd.DataFrame):
+        # si format = np.array, convert en DF
+        df = pd.DataFrame(features)
+    else:
+        df = features
+        
+    # pred
     prediction = model.predict(df)
+    
+    # verif que prediction est un scalaire
+    if hasattr(prediction, "__len__") and len(prediction) == 1:
+        return prediction[0]
     return prediction

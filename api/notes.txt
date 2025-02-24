@@ -2,3 +2,20 @@ activer env P6 dans Bash :
 
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate P6
+
+test api en local
+
+uvicorn main:app --reload
+
+
+
+nom api Heroku
+
+credit-scoring-api-yd
+https://git.heroku.com/credit-scoring-api-yd.git
+
+
+
+api key Heroku
+
+HRKU-b32a3477-3def-45ff-af77-23caa503e3fc
