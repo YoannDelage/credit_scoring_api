@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 import pandas as pd
 import mlflow
 import os
@@ -44,16 +44,9 @@ model = load_model("LGBM_smoted_tuned_trained/1")  # modèle MLflow
 if model is None:
     raise HTTPException(status_code=500, detail="Le modèle n'a pas pu être chargé.")
 
-# Structure attendue par l'API avec validation
+# Structure attendue par l'API
 class InputData(BaseModel):
-    SK_ID_CURR: int  # SK_ID_CURR en entrée
-    
-    # Validation pour s'assurer que SK_ID_CURR est bien un entier
-    @validator('SK_ID_CURR')
-    def validate_int(cls, value):
-        if not isinstance(value, int):
-            raise ValueError('L\'ID du client doit être un entier.')
-        return value
+    SK_ID_CURR: int  # SK_ID_CURR en entrée, sans validation forcée ici
 
 @app.get("/")
 def home():
@@ -65,7 +58,7 @@ async def predict_api(data: InputData, request: Request):
         # Affiche les données reçues pour le débogage
         logger.debug(f"Requête reçue: {data}")
         
-        # Chargement du DF de test 
+        # Charger le DF de test 
         file_path = '../df_test.csv' 
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail="Fichier df_test.csv introuvable.")
@@ -117,5 +110,6 @@ async def predict_api(data: InputData, request: Request):
     except Exception as e:
         logger.error(f"Erreur inconnue: {str(e)}")
         return {"error": f"Une erreur est survenue: {str(e)}"}
+
 
 
