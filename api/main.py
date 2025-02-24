@@ -1,14 +1,14 @@
+import os
 from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
 import mlflow
-import os
 import logging
 import uvicorn
 
 # URI de suivi pour pointer vers serveur MLflow
-mlflow.set_tracking_uri("http://localhost:5000")  
+mlflow.set_tracking_uri("http://localhost:5000")
 
 # init API FastAPI
 app = FastAPI()
@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Clé d'API (remplacer par la même clé utilisée dans l'application Streamlit)
-API_KEY = 'HRKU-b32a3477-3def-45ff-af77-23caa503e3fc'
+API_KEY = os.getenv("API_KEY", "HRKU-b32a3477-3def-45ff-af77-23caa503e3fc")  # On récupère la clé depuis l'env
 
 # Fonction pour charger le modèle
 def load_model(model_name: str):
@@ -126,8 +126,3 @@ async def predict_api(data: InputData, request: Request, api_key: str = Header(N
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))  # Prend le port défini par Heroku
     uvicorn.run(app, host="0.0.0.0", port=port)
-
-
-
-
-
