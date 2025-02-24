@@ -72,6 +72,8 @@ def home():
 @app.post("/predict")
 async def predict_api(data: InputData, request: Request, api_key: str = Header(None)):
     # Vérification de la clé d'API
+    if api_key is None:
+        raise HTTPException(status_code=403, detail="Clé d'API manquante")
     verify_api_key(api_key)
 
     try:
