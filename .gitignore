@@ -24,3 +24,4 @@ Desktop.ini
 *.tmp
 *.bak
 *.swp
+.ipynb_checkpoints/
