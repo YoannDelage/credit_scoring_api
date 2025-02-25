@@ -56,16 +56,16 @@ async def predict_api(data: InputData):
     try:
         logger.debug(f"Requête reçue: {data}")
         
-        file_path = '../df_test.csv' 
+        file_path = '../df_test_reduit.csv' 
         if not os.path.exists(file_path):
-            raise HTTPException(status_code=404, detail="Fichier df_test.csv introuvable.")
+            raise HTTPException(status_code=404, detail="Fichier df_test_reduit.csv introuvable.")
 
-        df_test = pd.read_csv(file_path)
+        df_test_reduit = pd.read_csv(file_path)
 
-        if 'SK_ID_CURR' not in df_test.columns:
-            raise HTTPException(status_code=400, detail="La colonne 'SK_ID_CURR' est manquante dans df_test.csv.")
+        if 'SK_ID_CURR' not in df_test_reduit.columns:
+            raise HTTPException(status_code=400, detail="La colonne 'SK_ID_CURR' est manquante dans df_test_reduit.csv.")
         
-        individual = df_test[df_test['SK_ID_CURR'] == data.SK_ID_CURR]
+        individual = df_test_reduit[df_test_reduit['SK_ID_CURR'] == data.SK_ID_CURR]
         logger.debug(f"Individu trouvé: {individual}")
 
         if individual.empty:
