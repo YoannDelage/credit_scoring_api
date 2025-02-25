@@ -13,15 +13,6 @@ mlflow.set_tracking_uri("http://localhost:5000")
 # init API FastAPI
 app = FastAPI()
 
-# Configuration du middleware CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Autorise toutes les origines (à restreindre en prod)
-    allow_credentials=True,
-    allow_methods=["*"],  # Autorise toutes les méthodes HTTP
-    allow_headers=["*"],  # Autorise tous les headers
-)
-
 # Config des logs
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
