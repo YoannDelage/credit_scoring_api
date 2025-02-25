@@ -2,6 +2,10 @@ import streamlit as st
 import requests
 import json
 
+
+# Désactivation de la protection XSRF
+st.set_page_config(page_title="Prédiction de Scoring Crédit", initial_sidebar_state="collapsed")
+
 # titre
 st.title('Prédiction de Scoring Crédit')
 
