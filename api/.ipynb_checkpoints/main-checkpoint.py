@@ -1,26 +1,20 @@
 import os
-from fastapi import FastAPI, HTTPException, Request, Header
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 import pandas as pd
 import mlflow
 import logging
 import uvicorn
-from typing import Optional
-from fastapi import Header
 
 # URI de suivi pour pointer vers serveur MLflow
-mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.set_tracking_uri("http://localhost:5000")  # Remplacer par l'URL de ton serveur MLflow
 
-# init API FastAPI
+# Init API FastAPI
 app = FastAPI()
 
 # Config des logs
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-# Clé d'API (remplacer par la même clé utilisée dans l'application Streamlit)
-API_KEY = os.getenv("API_KEY", "HRKU-b32a3477-3def-45ff-af77-23caa503e3fc")  # On récupère la clé depuis l'env
 
 # Fonction pour charger le modèle
 def load_model(model_name: str):
@@ -53,33 +47,12 @@ if model is None:
 class InputData(BaseModel):
     SK_ID_CURR: int
 
-# Fonction pour vérifier la clé d'API
-def verify_api_key(api_key: str):
-    logger.debug(f"Clé API reçue: {api_key}")
-    if api_key != API_KEY:
-        logger.error(f"Clé API invalide: {api_key}")
-        raise HTTPException(status_code=403, detail="Clé d'API invalide")
-
-    else:
-        logger.debug("Clé API valide")  # Si la clé est valide, on log ce message
-
-
 @app.get("/")
 def home():
     return {"message": "API de scoring connectée à MLflow !"}
 
 @app.post("/predict")
-async def predict_api(
-    data: InputData,
-    request: Request,
-    api_key: Optional[str] = Header(None, alias="X-API-KEY")
-):
-
-    # Vérification de la clé d'API
-    if api_key is None:
-        raise HTTPException(status_code=403, detail="Clé d'API manquante")
-    verify_api_key(api_key)
-
+async def predict_api(data: InputData):
     try:
         logger.debug(f"Requête reçue: {data}")
         
@@ -126,7 +99,7 @@ async def predict_api(
         logger.error(f"Erreur inconnue: {str(e)}")
         return {"error": f"Une erreur est survenue: {str(e)}"}
 
-# Si le script est exécuté directement, lancer l'application sur le bon port pour Heroku
+# Si le script est exécuté directement, lancer l'application sur le bon port
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # Prend le port défini par Heroku
+    port = int(os.environ.get("PORT", 8000))  # Port par défaut pour Render
     uvicorn.run(app, host="0.0.0.0", port=port)

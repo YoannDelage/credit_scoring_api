@@ -1,8 +1,7 @@
 import streamlit as st
 import requests
-import json
 
-# Désactivation de la protection XSRF
+
 st.set_page_config(page_title="Prédiction de Scoring Crédit", initial_sidebar_state="collapsed")
 
 # Titre
@@ -14,9 +13,6 @@ st.header('Bonjour, veuillez entrer l\'ID du client recherché')
 # Input ID du client
 sk_id_curr = st.text_input('ID du client', '')
 
-# Clé d'API
-API_KEY = 'HRKU-b32a3477-3def-45ff-af77-23caa503e3fc'
-
 # Fonction pour faire la requête API
 def get_prediction(sk_id_curr):
     if not sk_id_curr:
@@ -27,11 +23,12 @@ def get_prediction(sk_id_curr):
     except ValueError:
         return "Erreur : L'ID du client doit être un entier valide."
     
-    url = 'https://credit-scoring-api-yd-268c4aa564a3.herokuapp.com/predict'
+   
+    url = url = 'https://credit-scoring-api-lntn.onrender.com/predict'
     headers = {
-        'api_key': API_KEY,
         'Content-Type': 'application/json'
     }
+    
     payload = {'SK_ID_CURR': sk_id_curr}
     
     try:
@@ -63,6 +60,7 @@ if st.button('Obtenir la prédiction'):
         st.write(f"Prédiction (0 = Crédit accordé, 1 = Crédit refusé) : {result['prediction']}")
     else:
         st.write(result)
+
 
 
 
