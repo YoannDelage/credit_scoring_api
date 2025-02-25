@@ -6,21 +6,14 @@ import pandas as pd
 import mlflow
 import logging
 import uvicorn
+from typing import Optional
+from fastapi import Header
 
 # URI de suivi pour pointer vers serveur MLflow
 mlflow.set_tracking_uri("http://localhost:5000")
 
 # init API FastAPI
 app = FastAPI()
-
-# Configuration du middleware CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Autorise toutes les origines (à restreindre en prod)
-    allow_credentials=True,
-    allow_methods=["*"],  # Autorise toutes les méthodes HTTP
-    allow_headers=["*"],  # Autorise tous les headers
-)
 
 # Config des logs
 logging.basicConfig(level=logging.DEBUG)
@@ -76,7 +69,12 @@ def home():
     return {"message": "API de scoring connectée à MLflow !"}
 
 @app.post("/predict")
-async def predict_api(data: InputData, request: Request, api_key: str = Header(None)):
+async def predict_api(
+    data: InputData,
+    request: Request,
+    api_key: Optional[str] = Header(None, alias="X-API-KEY")
+):
+
     # Vérification de la clé d'API
     if api_key is None:
         raise HTTPException(status_code=403, detail="Clé d'API manquante")
