@@ -2,9 +2,6 @@ services:
   - type: web
     name: credit-scoring-api
     env: python
-    buildCommand: pip install -r requirements.txt  # Installe les dépendances
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT  # Lance l'API FastAPI directement
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     plan: free
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.9.7
