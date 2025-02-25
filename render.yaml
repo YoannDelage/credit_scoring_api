@@ -3,6 +3,8 @@ services:
     name: credit-scoring-api
     env: python
     buildCommand: pip install -r requirements.txt  # Installe les dépendances
-    startCommand: streamlit run api/app.py --server.port $PORT  # Lance l'application Streamlit
-    plan: free  # Ou le plan que tu utilises sur Render (par exemple, free, starter, etc.)
-    port: 80  # Le port sur lequel l'application Streamlit sera accessible
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT  # Lance l'API FastAPI directement
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.7

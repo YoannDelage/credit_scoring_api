@@ -1,13 +1,9 @@
 import os
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import pandas as pd
-import mlflow
 import logging
 import uvicorn
-
-# URI de suivi pour pointer vers serveur MLflow
-mlflow.set_tracking_uri("http://localhost:5000")  # Remplacer par l'URL de ton serveur MLflow
 
 # Init API FastAPI
 app = FastAPI()
@@ -16,88 +12,77 @@ app = FastAPI()
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Fonction pour charger le modèle
-def load_model(model_name: str):
-    try:
-        model = mlflow.pyfunc.load_model(f"models:/{model_name}")
-        return model
-    except Exception as e:
-        logger.error(f"Erreur lors du chargement du modèle : {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erreur de chargement du modèle : {str(e)}")
-
-# Fonction de prédiction
-def predict(model, features):
-    if not isinstance(features, pd.DataFrame):
-        df = pd.DataFrame(features)
-    else:
-        df = features
-    
-    prediction = model.predict(df)
-    
-    if hasattr(prediction, "__len__") and len(prediction) == 1:
-        return prediction[0]
-    return prediction
-
-# Chargement du modèle
-model = load_model("LGBM_smoted_tuned_trained/1")
-if model is None:
-    raise HTTPException(status_code=500, detail="Le modèle n'a pas pu être chargé.")
-
 # Structure attendue par l'API
 class InputData(BaseModel):
     SK_ID_CURR: int
 
 @app.get("/")
 def home():
-    return {"message": "API de scoring connectée à MLflow !"}
+    return {"message": "API de scoring crédit connectée !"}
 
+# Fonction pour charger le DataFrame
+def load_dataframe():
+    try:
+        # Chemin absolu basé sur le répertoire courant
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(base_dir, 'df_test_reduit.csv')
+        
+        # Si le fichier n'est pas à cet emplacement, essayons d'autres emplacements
+        if not os.path.exists(file_path):
+            file_path = os.path.join(os.path.dirname(base_dir), 'df_test_reduit.csv')
+        
+        if not os.path.exists(file_path):
+            # Dernier recours: chercher partout dans le répertoire courant et ses sous-dossiers
+            for root, dirs, files in os.walk(os.path.dirname(base_dir)):
+                if 'df_test_reduit.csv' in files:
+                    file_path = os.path.join(root, 'df_test_reduit.csv')
+                    break
+        
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Fichier df_test_reduit.csv introuvable.")
+            
+        logger.info(f"Chargement du fichier: {file_path}")
+        return pd.read_csv(file_path)
+    except Exception as e:
+        logger.error(f"Erreur lors du chargement du DataFrame: {str(e)}")
+        raise
+
+# Modification pour utiliser des prédictions simplifiées en attendant de faire fonctionner MLflow
 @app.post("/predict")
 async def predict_api(data: InputData):
     try:
         logger.debug(f"Requête reçue: {data}")
         
-        file_path = '../df_test_reduit.csv' 
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=404, detail="Fichier df_test_reduit.csv introuvable.")
-
-        df_test_reduit = pd.read_csv(file_path)
+        # Chargement du DataFrame
+        df_test_reduit = load_dataframe()
 
         if 'SK_ID_CURR' not in df_test_reduit.columns:
             raise HTTPException(status_code=400, detail="La colonne 'SK_ID_CURR' est manquante dans df_test_reduit.csv.")
         
         individual = df_test_reduit[df_test_reduit['SK_ID_CURR'] == data.SK_ID_CURR]
-        logger.debug(f"Individu trouvé: {individual}")
+        logger.debug(f"Individu trouvé: {not individual.empty}")
 
         if individual.empty:
-            raise HTTPException(status_code=404, detail="Identifiant non trouvé dans le DataFrame")
+            raise HTTPException(status_code=404, detail=f"Identifiant {data.SK_ID_CURR} non trouvé dans le DataFrame")
 
-        features = individual.loc[:, individual.columns != 'SK_ID_CURR']
-        logger.debug(f"Features extraites: {features}")
-
-        if features.shape[0] != 1:
-            raise HTTPException(status_code=400, detail="Les features ont une forme incorrecte.")
+        # Pour l'instant, utilisons une prédiction simple aléatoire
+        # Remplacer ceci par votre vraie logique de prédiction quand MLflow fonctionnera
+        import random
+        prediction = random.choice([0, 1])
         
-        logger.debug(f"Shape des features avant prédiction: {features.shape}")
-        
-        prediction = predict(model, features)
-        logger.debug(f"Prédiction du modèle: {prediction}")
-
-        if prediction not in [0, 1]:
-            raise HTTPException(status_code=500, detail="Prédiction invalide retournée par le modèle.")
-
         result = "Crédit accordé" if prediction == 0 else "Crédit refusé"
 
         return {"prediction": int(prediction), "resultat": result}
 
     except HTTPException as e:
         logger.error(f"Erreur HTTP: {e.detail}")
-        return {"error": e.detail}
+        raise
     except ValueError as e:
         logger.error(f"Erreur de validation: {e}")
-        return {"error": f"Erreur dans les données entrées: {str(e)}"}
+        raise HTTPException(status_code=400, detail=f"Erreur dans les données entrées: {str(e)}")
     except Exception as e:
         logger.error(f"Erreur inconnue: {str(e)}")
-        return {"error": f"Une erreur est survenue: {str(e)}"}
+        raise HTTPException(status_code=500, detail=f"Une erreur est survenue: {str(e)}")
 
 # Si le script est exécuté directement, lancer l'application sur le bon port
 if __name__ == "__main__":

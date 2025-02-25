@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 
-
 st.set_page_config(page_title="Prédiction de Scoring Crédit", initial_sidebar_state="collapsed")
 
 # Titre
@@ -23,8 +22,9 @@ def get_prediction(sk_id_curr):
     except ValueError:
         return "Erreur : L'ID du client doit être un entier valide."
     
-   
+    # URL de l'API
     url = 'https://credit-scoring-api-8lkh.onrender.com/predict'
+    
     headers = {
         'Content-Type': 'application/json'
     }
@@ -32,7 +32,13 @@ def get_prediction(sk_id_curr):
     payload = {'SK_ID_CURR': sk_id_curr}
     
     try:
-        response = requests.post(url, json=payload, headers=headers)
+        # Afficher les détails de la requête pour débogage
+        st.write(f"Envoi de la requête à: {url}")
+        st.write(f"Payload: {payload}")
+        
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
+        
+        st.write(f"Code de statut reçu: {response.status_code}")
         
         if response.status_code != 200:
             return f"Erreur dans la prédiction : Code {response.status_code} - {response.text}"
@@ -50,14 +56,19 @@ def get_prediction(sk_id_curr):
 
 # Ajout bouton
 if st.button('Obtenir la prédiction'):
-    if 'prediction_result' not in st.session_state:
-        st.session_state.prediction_result = get_prediction(sk_id_curr)
+    # Réinitialiser le résultat de prédiction à chaque clic
+    st.session_state.prediction_result = get_prediction(sk_id_curr)
     
     result = st.session_state.prediction_result
     
     if isinstance(result, dict):
         st.write(f"Résultat de la prédiction : {result['resultat']}")
         st.write(f"Prédiction (0 = Crédit accordé, 1 = Crédit refusé) : {result['prediction']}")
+        
+        # Afficher les détails supplémentaires s'ils existent
+        for key, value in result.items():
+            if key not in ['resultat', 'prediction']:
+                st.write(f"{key}: {value}")
     else:
         st.write(result)
 
