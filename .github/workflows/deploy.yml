@@ -1,4 +1,4 @@
-name: Deploy to Heroku
+name: Deploy to Render
 
 on:
   push:
@@ -23,12 +23,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Login to Heroku
-      uses: akshnz/heroku-login-action@v1.2
-      with:
-        heroku_api_key: ${{ secrets.HRKU-b32a3477-3def-45ff-af77-23caa503e3fc }}
-
-    - name: Deploy to Heroku
+    - name: Trigger Render Deployment
       run: |
-        git remote add heroku https://git.heroku.com/credit-scoring-api-yd.git
-        git push heroku main
+        curl -X POST "$RENDER_DEPLOY_HOOK"
+      env:
+        RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
