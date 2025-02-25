@@ -22,7 +22,7 @@ def get_prediction(sk_id_curr):
     except ValueError:
         return "Erreur : L'ID du client doit être un entier valide."
     
-    # URL de l'API
+    # URL de l'API (ne changez pas cette URL - elle fonctionne déjà)
     url = 'https://credit-scoring-api-8lkh.onrender.com/predict'
     
     headers = {
@@ -33,12 +33,15 @@ def get_prediction(sk_id_curr):
     
     try:
         # Afficher les détails de la requête pour débogage
-        st.write(f"Envoi de la requête à: {url}")
-        st.write(f"Payload: {payload}")
+        with st.expander("Détails de la requête"):
+            st.write(f"URL: {url}")
+            st.write(f"Payload: {payload}")
         
         response = requests.post(url, json=payload, headers=headers, timeout=30)
         
-        st.write(f"Code de statut reçu: {response.status_code}")
+        with st.expander("Détails de la réponse"):
+            st.write(f"Code de statut: {response.status_code}")
+            st.write(f"Réponse brute: {response.text}")
         
         if response.status_code != 200:
             return f"Erreur dans la prédiction : Code {response.status_code} - {response.text}"
@@ -56,22 +59,15 @@ def get_prediction(sk_id_curr):
 
 # Ajout bouton
 if st.button('Obtenir la prédiction'):
-    # Réinitialiser le résultat de prédiction à chaque clic
-    st.session_state.prediction_result = get_prediction(sk_id_curr)
-    
-    result = st.session_state.prediction_result
+    with st.spinner('Récupération de la prédiction...'):
+        result = get_prediction(sk_id_curr)
     
     if isinstance(result, dict):
+        st.success("Prédiction récupérée avec succès !")
         st.write(f"Résultat de la prédiction : {result['resultat']}")
         st.write(f"Prédiction (0 = Crédit accordé, 1 = Crédit refusé) : {result['prediction']}")
-        
-        # Afficher les détails supplémentaires s'ils existent
-        for key, value in result.items():
-            if key not in ['resultat', 'prediction']:
-                st.write(f"{key}: {value}")
     else:
-        st.write(result)
-
+        st.error(result)
 
 
 
