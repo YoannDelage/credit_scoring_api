@@ -24,7 +24,7 @@ def get_prediction(sk_id_curr):
         return "Erreur : L'ID du client doit être un entier valide."
     
    
-    url = url = 'https://credit-scoring-api-lntn.onrender.com/predict'
+    url = 'https://credit-scoring-api-8lkh.onrender.com/predict'
     headers = {
         'Content-Type': 'application/json'
     }
