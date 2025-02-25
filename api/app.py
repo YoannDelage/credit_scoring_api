@@ -26,9 +26,9 @@ def get_prediction(sk_id_curr):
     
     url = 'https://credit-scoring-api-yd-268c4aa564a3.herokuapp.com/predict'
     headers = {
-        'Authorization': f'Bearer {API_KEY}',  # Ajout de la clé API dans l'en-tête Authorization
-        'Content-Type': 'application/json'
-    }
+    'api_key': API_KEY,  # Envoyer comme 'api_key' sans le 'Bearer'
+    'Content-Type': 'application/json'
+}
     payload = {'SK_ID_CURR': sk_id_curr}  # On passe les données sous forme de dictionnaire
 
     try:

@@ -62,8 +62,14 @@ class InputData(BaseModel):
 
 # Fonction pour vérifier la clé d'API
 def verify_api_key(api_key: str):
+    logger.debug(f"Clé API reçue: {api_key}")
     if api_key != API_KEY:
+        logger.error(f"Clé API invalide: {api_key}")
         raise HTTPException(status_code=403, detail="Clé d'API invalide")
+
+    else:
+        logger.debug("Clé API valide")  # Si la clé est valide, on log ce message
+
 
 @app.get("/")
 def home():
