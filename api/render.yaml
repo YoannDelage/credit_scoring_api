@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: credit-scoring-api
+    env: python
+    buildCommand: pip install -r requirements.txt  # Installe les dépendances
+    startCommand: streamlit run api/app.py  # Lance l'application Streamlit
+    plan: free  # Ou le plan que tu utilises sur Render (par exemple, free, starter, etc.)
