@@ -131,8 +131,8 @@ async def predict_api(data: InputData):
 
         return {
             "prediction": int(prediction), 
-            "resultat": result
-            # Autres informations que vous voudriez ajouter ici
+            "resultat": result,
+            "proba": float(prediction_proba)  # Ajout de la probabilité réelle
         }
 
     except HTTPException as e:
