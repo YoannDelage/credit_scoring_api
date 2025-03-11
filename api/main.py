@@ -118,7 +118,8 @@ async def predict_api(data: InputData):
         threshold = 0.5  # à remplacer par votre seuil métier optimisé
         prediction = 1 if prediction_proba > threshold else 0
         
-                    # Extraction de l'importance des features
+        # Extraction de l'importance des features
+        feature_importance_data = {}
         try:
             # Pour LightGBM, l'importance des features est disponible dans feature_importances_
             feature_importance = model.feature_importances_
@@ -136,8 +137,8 @@ async def predict_api(data: InputData):
                 reverse=True
             )
             
-            # Extraction des 15 features les plus importantes pour éviter de surcharger la réponse
-            top_features = sorted_feature_importance[:15]
+            # Extraction des 10 features les plus importantes
+            top_features = sorted_feature_importance[:10]
             
             feature_importance_data = {
                 "feature_names": [feature[0] for feature in top_features],
@@ -145,55 +146,60 @@ async def predict_api(data: InputData):
             }
             logger.debug(f"Feature importance extraite: {feature_importance_data}")
             
-            # Calculer la contribution de chaque feature pour le graphique en cascade
+            # Création des données pour le waterfall chart
+            # Pour créer un waterfall efficace, nous simulons l'impact positif/négatif
+            # des principales features en fonction de leur valeur par rapport à la moyenne
             try:
-                # Obtenir les contributions individuelles (SHAP values ou attribution similaire)
-                # Note: nous simulons ces valeurs car l'extraction réelle nécessiterait 
-                # un modèle spécifiquement configuré ou une librairie SHAP
+                # Sélectionner les 10 features les plus importantes
+                waterfall_features = top_features[:10]
                 
-                # Valeur de base (moyenne des prédictions)
-                base_value = 0.5  # Valeur neutre pour le prêt
+                # Calculer la moyenne de chaque feature dans le dataset
+                feature_means = df_test_reduit.drop('SK_ID_CURR', axis=1).mean()
                 
-                # Obtenir les valeurs normalisées des features du client
-                client_features = features.iloc[0].values
-                
-                # Simuler la contribution de chaque feature (en pratique, utiliser SHAP)
-                # Pour une simulation réaliste, on utilise l'importance de la feature
-                # et on ajoute un facteur basé sur la valeur du client
-                feature_contributions = []
-                for i, (name, importance) in enumerate(zip(feature_names, feature_importance)):
-                    # Normaliser la valeur du client entre -1 et 1 (simple simulation)
-                    normalized_value = (client_features[i] - features[name].mean()) / (features[name].std() + 1e-8)
-                    normalized_value = max(min(normalized_value, 3), -3) / 3  # Limiter les valeurs extrêmes
+                # Calculer les contributions pour le waterfall
+                contributions = []
+                for feature_name, importance in waterfall_features:
+                    # Obtenir la valeur du client et la moyenne pour cette feature
+                    client_value = features[feature_name].values[0]
+                    mean_value = feature_means[feature_name]
                     
-                    # La contribution est basée sur l'importance et la valeur normalisée
-                    # Le signe indique si la feature contribue positivement ou négativement
-                    contribution = importance * normalized_value * 0.1
+                    # Calculer l'écart normalisé
+                    if mean_value != 0:
+                        deviation = (client_value - mean_value) / mean_value
+                    else:
+                        deviation = client_value
                     
-                    feature_contributions.append((name, contribution))
+                    # Limiter les valeurs extrêmes
+                    deviation = max(min(deviation, 2), -2)
+                    
+                    # Calculer la contribution
+                    # Le signe indique si c'est positif ou négatif pour l'acceptation du prêt
+                    # Pour les modèles où 1 = défaut, un écart positif par rapport à la moyenne
+                    # augmente le risque (donc impact négatif sur l'acceptation)
+                    sign = -1 if prediction == 1 else 1
+                    contribution = sign * deviation * importance * 0.05  # Facteur d'échelle
+                    
+                    contributions.append((feature_name, float(contribution)))
                 
                 # Trier par valeur absolue de contribution
                 sorted_contributions = sorted(
-                    feature_contributions, 
+                    contributions, 
                     key=lambda x: abs(x[1]), 
                     reverse=True
                 )
                 
-                # Prendre les top N contributions (positives et négatives)
-                top_contributions = sorted_contributions[:10]
-                
                 waterfall_data = {
-                    "feature_names": [feature[0] for feature in top_contributions],
-                    "contribution_values": [float(feature[1]) for feature in top_contributions],
-                    "base_value": float(base_value)
+                    "feature_names": [feature[0] for feature in sorted_contributions],
+                    "contribution_values": [feature[1] for feature in sorted_contributions],
+                    "base_value": 0.5  # Valeur de base
                 }
                 
                 feature_importance_data["waterfall"] = waterfall_data
-                logger.debug(f"Waterfall data générée: {waterfall_data}")
                 
             except Exception as e:
-                logger.error(f"Erreur lors du calcul des contributions pour le waterfall: {str(e)}")
-                # Ne pas échouer complètement si cette partie échoue
+                logger.error(f"Erreur lors du calcul des contributions waterfall: {str(e)}")
+                # Continuer même en cas d'erreur
+                
         except Exception as e:
             logger.error(f"Erreur lors de l'extraction de l'importance des features: {str(e)}")
             feature_importance_data = {"error": str(e)}
