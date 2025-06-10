@@ -2,7 +2,7 @@ fastapi==0.115.8
 joblib==1.4.2
 pandas==2.2.3
 pydantic==2.10.6
-Requests==2.32.3
+Requests==2.32.4
 streamlit==1.42.2
 uvicorn==0.34.0
 lightgbm==4.6.0
