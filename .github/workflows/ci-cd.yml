@@ -54,6 +54,5 @@ jobs:
     steps:
     - name: Message de déploiement
       run: |
-        echo "✅ Tests réussis ! Render va déployer automatiquement."
-        echo "🚀 Vérifiez le déploiement sur : https://credit-scoring-api-8lkh.onrender.com"
-
+        echo "Tests reussis ! Render va deployer automatiquement."
+        echo "Verifiez le deploiement sur : https://credit-scoring-api-8lkh.onrender.com"
