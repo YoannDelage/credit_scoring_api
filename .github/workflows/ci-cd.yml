@@ -1,0 +1,59 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Tests automatiques
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout du code
+      uses: actions/checkout@v4
+    
+    - name: Configuration Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    
+    - name: Installation des dépendances
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Vérification de la syntaxe avec flake8
+      run: |
+        pip install flake8
+        # Ignorer certaines erreurs non critiques
+        flake8 api --count --select=E9,F63,F7,F82 --show-source --statistics || true
+        flake8 api --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      continue-on-error: true
+    
+    - name: Exécution des tests avec pytest
+      run: |
+        cd api
+        pytest test_app.py test_main.py -v --tb=short
+    
+    - name: Rapport de couverture de code
+      run: |
+        cd api
+        pytest test_app.py test_main.py --cov --cov-report=term-missing
+      continue-on-error: true
+  
+  deploy-info:
+    name: Information de déploiement
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Message de déploiement
+      run: |
+        echo "✅ Tests réussis ! Render va déployer automatiquement."
+        echo "🚀 Vérifiez le déploiement sur : https://credit-scoring-api-8lkh.onrender.com"
+

@@ -1,27 +1,68 @@
-# envs
-P6/
-*.env
-
-# fichiers Python
-*.pyc
-*.pyo
+# Python
 __pycache__/
-.ipynb_checkpoints/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 
-# dossiers et fichiers d'IDE
+# Environnements virtuels
+venv/
+env/
+ENV/
+P6/
+P7/
+.venv
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDEs
 .vscode/
 .idea/
-
-# fichiers système
+*.swp
+*.swo
 .DS_Store
 Thumbs.db
-Desktop.ini
 
-# logs
+# Données volumineuses (à ne PAS pusher sur GitHub)
+*.csv
+*.gzip
+*.pkl
+*.parquet
+*.h5
+*.hdf5
+
+# Exceptions pour les petits fichiers nécessaires à l'API
+!api/LGBM_TTS.pkl
+!df_test_reduit.csv
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Logs
 *.log
+logs/
 
-# fichiers temporaires
-*.tmp
-*.bak
-*.swp
-.ipynb_checkpoints/
+# Variables d'environnement
+.env
+*.env
+
+# Render
+.render/
+
+# Rapports HTML volumineux
+*.html
+
+# PDF
+*.pdf
+
+# Fichiers temporaires
+Untitled.ipynb
+api/readmetest.txt
