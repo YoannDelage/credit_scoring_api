@@ -8,7 +8,7 @@ import joblib
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 
-# Config des logs
+# Configuration des logs pour le debugging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
